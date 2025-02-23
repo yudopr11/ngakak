@@ -29,7 +29,7 @@ def delete_image(public_id):
 def analyze_bill(image_url, description):
     client = OpenAI()
     prompt = f'''
-    This is a restaurant bill image. Here's the description of who ordered what: 
+    Based on the bill image, here's the description of who ordered what: 
     
     {description}
 
@@ -40,6 +40,7 @@ def analyze_bill(image_url, description):
     - If a discount does not have an associated discount rate (e.g., a shipping discount), distribute its total amount evenly among all individuals.
     - If a discount has an associated rate (e.g., 20% discount), first note the total discount amount provided. Then, allocate this discount proportionally based on each individuals bill relative to the total bill for all individuals.
     - Subtract this discount share from their original order amount.
+    - **Important: The crossed out text is not a discount, it is just a marketing technique, so do not consider it as a discount in your calculations.**
 
     Format the output as valid JSON with the following structure:
     
@@ -161,7 +162,7 @@ def main():
     # Text area for description with a session state key
     description = st.text_area(
         "Describe who ordered what",
-        placeholder="Example: John ordered one pasta and a soda. Sarah had the steak and wine. They agreed to split the service charge equally.",
+        placeholder="Example: John ordered one pasta and a soda. Sarah had the steak and wine. They agreed to split the service charge equally. The bill is in Rupiah. The tax is 11%.",
         key="description"
     )
 
