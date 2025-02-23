@@ -33,10 +33,13 @@ def analyze_bill(image_url, description):
     
     {description}
 
-    Please analyze the bill and create a detailed breakdown of what each person needs to pay based on their individual orders, including all individual items and their prices. Additionally, include any shared costs such as tax, service, tip, and other fees. The following conditions must be met:
-    - Tax is calculated proportionally based on the total order amount of each person.
-    - Service charges and tip are divided equally among all persons.
+    Please analyze the bill and create a detailed breakdown of what each person needs to pay based on their individual orders, including all individual items and their prices. Additionally, include any shared costs such as tax, and other fees or shared discounts. The following conditions must be met:
     - Detect and include the currency used in the bill.
+    - Tax is calculated proportionally based on the total order amount of each person and its currency. If not stated, Rupiah has 11% tax.
+    - Service charges and other fees are divided equally among all persons.
+    - If a discount does not have an associated discount rate (e.g., a shipping discount), distribute its total amount evenly among all individuals.
+    - If a discount has an associated rate (e.g., 20% discount), first note the total discount amount provided. Then, allocate this discount proportionally based on each individuals bill relative to the total bill for all individuals.
+    - Subtract this discount share from their original order amount.
 
     Format the output as valid JSON with the following structure:
     
@@ -48,19 +51,19 @@ def analyze_bill(image_url, description):
         ],
         "individual_total": integer,
         "tax_share": integer,
-        "service_share": integer,
-        "tip_share": integer,
+        "other_share": integer,
+        "discount_share": integer,
         "final_total": integer
         }}
     }},
     "total_bill": integer,
     "total_tax": integer,
-    "total_service": integer,
-    "total_tip": integer,
+    "total_other": integer,
+    "total_discount": integer,
     "currency": "currency_symbol_or_code"
     }}
 
-    Ensure that all numbers are formatted to 2 decimal places. The output must be just valid JSON with no additional text or explanations.
+    The output must be just valid JSON with no additional text or explanations.
     '''
     try:
         response = client.chat.completions.create(
@@ -95,9 +98,9 @@ def display_bill_breakdown(analysis):
     with col2:
         st.metric("Total Tax", f"{currency}{analysis['total_tax']}")
     with col3:
-        st.metric("Total Tip", f"{currency}{analysis['total_tip']}")
+        st.metric("Total Other", f"{currency}{analysis['total_other']}")    
     with col4:
-        st.metric("Total Service", f"{currency}{analysis['total_service']}")
+        st.metric("Total Discount", f"{currency}{analysis['total_discount']}")
 
     st.subheader("Individual Breakdowns")
     for person, details in analysis['split_details'].items():
@@ -116,11 +119,11 @@ def display_bill_breakdown(analysis):
                 st.write("Tax Share")
                 st.write(f"{currency}{details['tax_share']}")
             with col3:
-                st.write("Tip Share")
-                st.write(f"{currency}{details['tip_share']}")
+                st.write("Other Share")
+                st.write(f"{currency}{details['other_share']}")
             with col4:
-                st.write("Service Share")
-                st.write(f"{currency}{details['service_share']}")
+                st.write("Discount Share")
+                st.write(f"{currency}{details['discount_share']}")
             with col5:
                 st.write("Final Total")
                 st.write(f"{currency}{details['final_total']}")
@@ -182,6 +185,7 @@ def main():
 
                     # Analyze the bill via OpenAI
                     analysis = analyze_bill(image_url, description)
+                    
                     if analysis:
                         display_bill_breakdown(analysis)
                         delete_image(public_id)
