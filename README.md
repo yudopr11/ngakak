@@ -1,6 +1,19 @@
-# Streamlit Image Upload to Cloudinary
+# Ngakak - Split Bill App
 
-This is a simple Streamlit application that allows users to upload images to Cloudinary.
+Ngakak (Ngebagi, Gampang, Asyik, Kompak, Aman, Keren) is a smart bill splitting application that uses AI to analyze restaurant bills and provide detailed breakdowns of shared expenses.
+
+## Features
+
+- Upload bill images (PNG, JPG, JPEG)
+- AI-powered bill analysis using OpenAI's GPT-4
+- Automatic detection of items, prices, and currency
+- Fair split calculation for:
+  - Individual items
+  - Tax (proportionally divided)
+  - Service charges (equally divided)
+  - Tips (equally divided)
+- Clean and intuitive user interface
+- Temporary cloud storage with automatic cleanup
 
 ## Setup
 
@@ -9,30 +22,41 @@ This is a simple Streamlit application that allows users to upload images to Clo
 pip install -r requirements.txt
 ```
 
-2. Configure your Cloudinary credentials:
+2. Configure your environment variables:
    - Rename `.env.example` to `.env`
-   - Update the following variables in `.env` with your Cloudinary credentials:
-     - CLOUDINARY_CLOUD_NAME
-     - CLOUDINARY_API_KEY
-     - CLOUDINARY_API_SECRET
+   - Update the following variables in `.env`:
+     ```
+     CLOUDINARY_CLOUD_NAME=your_cloud_name
+     CLOUDINARY_API_KEY=your_api_key
+     CLOUDINARY_API_SECRET=your_api_secret
+     OPENAI_API_KEY=your_openai_api_key
+     ```
 
-   You can get these credentials from your Cloudinary dashboard.
+## Usage
 
-## Running the Application
-
-To run the application, use the following command:
+1. Run the application:
 ```bash
 streamlit run app.py
 ```
 
-## Features
+2. Upload a bill image
+3. Describe who ordered what in the text area
+   Example: "John ordered pasta (15.99) and soda (2.99). Sarah had steak (25.99) and wine (8.99). They agreed to split the service charge and tip equally."
+4. Click "Process Bill" to get the breakdown
+5. View the detailed split showing:
+   - Total bill summary
+   - Individual breakdowns
+   - Item-wise details
+   - Shared costs distribution
 
-- Upload images (PNG, JPG, JPEG)
-- Preview uploaded images before sending to Cloudinary
-- Display upload status and results
-- Show image details after successful upload
-- Error handling for failed uploads
+## Requirements
+
+- Python 3.8+
+- Streamlit
+- OpenAI API access
+- Cloudinary account
+- Internet connection
 
 ## Note
 
-Make sure you have a Cloudinary account and valid credentials before using this application. You can sign up for free at [Cloudinary](https://cloudinary.com/). 
+Make sure you have valid API credentials for both OpenAI and Cloudinary before using the application. The app temporarily stores images in Cloudinary for AI processing and automatically deletes them afterward. 
