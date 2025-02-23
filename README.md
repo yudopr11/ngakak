@@ -34,7 +34,7 @@ pip install -r requirements.txt
 
 ## Usage
 
-1. Run the application:
+1. Run the application locally:
 ```bash
 streamlit run app.py
 ```
@@ -48,6 +48,26 @@ streamlit run app.py
    - Individual breakdowns
    - Item-wise details
    - Shared costs distribution
+
+## Deployment
+
+### Railway
+
+1. Fork this repository
+2. Create a new project in Railway
+3. Connect your forked repository
+4. Add the following environment variables in Railway:
+   - `CLOUDINARY_CLOUD_NAME`
+   - `CLOUDINARY_API_KEY`
+   - `CLOUDINARY_API_SECRET`
+   - `OPENAI_API_KEY`
+5. Deploy! Railway will automatically detect the configuration from `railway.toml`
+
+The application uses `railway.toml` for deployment configuration with:
+- Python 3.10
+- Automatic dependency installation
+- Health checks
+- Failure recovery
 
 ## Requirements
 
