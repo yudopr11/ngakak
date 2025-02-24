@@ -72,6 +72,40 @@ npm run build
 
 The built files will be in the `dist` directory.
 
+### Deployment
+
+#### Railway Deployment
+
+This project includes configuration for easy deployment to [Railway](https://railway.app):
+
+1. Fork this repository to your GitHub account
+2. Create a new project in Railway
+3. Connect your GitHub repository
+4. Add the following environment variables in Railway:
+   - `VITE_API_BASE_URL`: Your backend API URL
+   - Any other environment variables required by your app
+5. Railway will automatically deploy your application
+
+The deployment configuration is defined in `railway.json` and includes:
+- Automatic builds using Nixpacks
+- Health checks and automatic restarts
+- Production-ready server configuration
+
+You can also deploy manually using the Railway CLI:
+```bash
+# Install Railway CLI
+npm i -g @railway/cli
+
+# Login to your Railway account
+railway login
+
+# Link to your Railway project
+railway link
+
+# Deploy your application
+railway up
+```
+
 ## API Integration
 
 The application expects the following API endpoints:
@@ -117,3 +151,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [Vite](https://vitejs.dev/)
 - [React Router](https://reactrouter.com/)
 - [Headless UI](https://headlessui.dev/)
+- [Railway](https://railway.app)
