@@ -1,30 +1,19 @@
 import streamlit as st
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
 from dotenv import load_dotenv
-import os
+import io, base64, json
 from PIL import Image
-import io
 from openai import OpenAI
 import pandas as pd
-import json
+
 
 # Load environment variables
 load_dotenv()
 
-# Configure Cloudinary
-cloudinary.config(
-    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
-    api_key=os.getenv('CLOUDINARY_API_KEY'),
-    api_secret=os.getenv('CLOUDINARY_API_SECRET')
-)
-
-def delete_image(public_id):
-    try:
-        result = cloudinary.uploader.destroy(public_id)
-    except Exception as e:
-        st.error(f'An error occurred while deleting: {str(e)}')
+def bytesio_to_base64(image_bytesio):
+    """Convert BytesIO image to Base64 string."""
+    image_bytesio.seek(0)  # Ensure the pointer is at the start
+    encoded_string = base64.b64encode(image_bytesio.read()).decode("utf-8")
+    return encoded_string
 
 def analyze_bill(image_url, description):
     client = OpenAI()
@@ -33,9 +22,9 @@ def analyze_bill(image_url, description):
     
     {description}
 
-    Please analyze the bill and create a detailed breakdown of what each person needs to pay based on their individual orders, including all individual items and their prices. Additionally, include any shared costs such as tax, and other fees or shared discounts. The following conditions must be met:
+    Please analyze the bill and create a detailed breakdown of what each person needs to pay based on their individual orders, including all individual items and their prices. Additionally, include any shared costs such as vat, and other fees or shared discounts. The following conditions must be met:
     - Detect and include the currency used in the bill.
-    - Tax is calculated proportionally based on the total order amount of each person and its currency. If not stated, Rupiah has 11% tax.
+    - Vat is calculated proportionally based on the total order amount of each person and its currency. If not stated, Rupiah has 11% vat.
     - Service charges and other fees are divided equally among all persons.
     - If a discount does not have an associated discount rate (e.g., a shipping discount), distribute its total amount evenly among all individuals.
     - If a discount has an associated rate (e.g., 20% discount), first note the total discount amount provided. Then, allocate this discount proportionally based on each individuals bill relative to the total bill for all individuals.
@@ -48,19 +37,19 @@ def analyze_bill(image_url, description):
     "split_details": {{
         "person_name": {{
         "items": [
-            {{"item": "item_name", "price": integer}}
+            {{"item": "item_name", "price": decimal}}
         ],
-        "individual_total": integer,
-        "tax_share": integer,
-        "other_share": integer,
-        "discount_share": integer,
-        "final_total": integer
+        "individual_total": decimal,
+        "vat_share": decimal,
+        "other_share": decimal,
+        "discount_share": decimal,
+        "final_total": decimal
         }}
     }},
-    "total_bill": integer,
-    "total_tax": integer,
-    "total_other": integer,
-    "total_discount": integer,
+    "total_bill": decimal,
+    "total_vat": decimal,
+    "total_other": decimal,
+    "total_discount": decimal,
     "currency": "currency_symbol_or_code"
     }}
 
@@ -71,6 +60,10 @@ def analyze_bill(image_url, description):
             model="gpt-4o",
             temperature=0,
             messages=[{
+                "role": "system",
+                "content": "You are a helpful assistant that analyzes bills and splits the bill according to the description of who ordered what."
+                },
+                {
                 "role": "user",
                 "content": [
                     {"type": "text", "text": prompt},
@@ -97,7 +90,7 @@ def display_bill_breakdown(analysis):
     with col1:
         st.metric("Total Bill", f"{currency}{analysis['total_bill']}")
     with col2:
-        st.metric("Total Tax", f"{currency}{analysis['total_tax']}")
+        st.metric("Total Vat", f"{currency}{analysis['total_vat']}")
     with col3:
         st.metric("Total Other", f"{currency}{analysis['total_other']}")    
     with col4:
@@ -117,8 +110,8 @@ def display_bill_breakdown(analysis):
                 st.write("Items Total")
                 st.write(f"{currency}{details['individual_total']}")
             with col2:
-                st.write("Tax Share")
-                st.write(f"{currency}{details['tax_share']}")
+                st.write("Vat Share")
+                st.write(f"{currency}{details['vat_share']}")
             with col3:
                 st.write("Other Share")
                 st.write(f"{currency}{details['other_share']}")
@@ -161,15 +154,17 @@ def main():
     
     # Text area for description with a session state key
     description = st.text_area(
-        "Describe who ordered what",
-        placeholder="Example: John ordered one pasta and a soda. Sarah had the steak and wine. They agreed to split the service charge equally. The bill is in Rupiah. The tax is 11%.",
-        key="description"
+        "Describe order details",
+        placeholder="Example: John ordered one pasta and a soda. Sarah had the steak and wine. They agreed to split the service charge equally. The bill is in Rupiah. The tax is 11%. Total bill is 200000 excluding tax.",
+        key="description",
+        height=200
     )
 
     if uploaded_file is not None:
         # Read and display the image
         bytes_data = uploaded_file.getvalue()
         image_bytes = io.BytesIO(bytes_data)
+        base64_string = bytesio_to_base64(image_bytes)
         image = Image.open(image_bytes)
         st.image(image, caption='Uploaded Bill', use_container_width=True)
 
@@ -179,17 +174,14 @@ def main():
         if st.session_state.button_clicked and description and not st.session_state.processed:
             with st.spinner('Uploading image and analyzing bill...'):
                 try:
-                    # Upload image to Cloudinary
-                    upload_result = cloudinary.uploader.upload(io.BytesIO(bytes_data), folder="bill")
-                    image_url = upload_result['secure_url']
-                    public_id = upload_result['public_id']
-
+                    # Upload image
+                    image_url = f"data:image/jpeg;base64,{base64_string}"
+                    
                     # Analyze the bill via OpenAI
                     analysis = analyze_bill(image_url, description)
                     
                     if analysis:
                         display_bill_breakdown(analysis)
-                        delete_image(public_id)
                         st.session_state.processed = True
                 except Exception as e:
                     st.error(f'An error occurred: {str(e)}')
