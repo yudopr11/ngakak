@@ -4,7 +4,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000
 
 export interface BillAnalysisResponse {
   split_details: {
-    [key: string]: {
+    [person_name: string]: {
       items: Array<{
         item: string;
         price: number;
@@ -17,9 +17,10 @@ export interface BillAnalysisResponse {
     };
   };
   total_bill: number;
-  total_vat: number;
-  total_other: number;
-  total_discount: number;
+  subtotal: number;
+  subtotal_vat: number;
+  subtotal_other: number;
+  subtotal_discount: number;
   currency: string;
 }
 

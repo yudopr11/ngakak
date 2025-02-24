@@ -1,120 +1,67 @@
 # Ngakak - Bill Splitting Made Easy
 
-Ngakak (Ngebagi, Gampang, Asyik, Kompak, Aman, Keren) is a modern web application that helps you split bills fairly and efficiently. Using AI-powered receipt analysis, Ngakak can automatically detect items, calculate individual shares, and handle additional charges like VAT and service fees.
+Ngakak (Ngebagi, Gampang, Asyik, Kompak, Aman, Keren) is a modern bill splitting application that helps you split bills with friends easily and accurately.
 
 ## Features
 
-- 📸 **AI Receipt Analysis**: Upload a photo of your receipt and let our AI handle the calculations
-- 🧮 **Smart Bill Splitting**: Automatically splits bills including VAT, service charges, and discounts
-- 👥 **Multi-person Support**: Split bills between any number of people
-- 🔒 **Secure Authentication**: Protected routes and API endpoints
-- 💫 **Modern UI/UX**: Responsive design with smooth animations and transitions
-- 🌙 **Dark Mode**: Easy on the eyes with a dark theme
+- 📸 Upload bill images for automatic analysis
+- 🤖 AI-powered item and price detection
+- 💰 Automatic bill splitting calculation
+- 📊 Clear breakdown of individual shares
+- 💾 Save analysis results as images
+- 🔒 Secure user authentication
+- 📱 Responsive design for all devices
 
 ## Tech Stack
 
-- **Frontend**:
-  - React 18 with TypeScript
-  - React Router for navigation
-  - Tailwind CSS for styling
-  - Headless UI & Heroicons for components
-  - React Hot Toast for notifications
-  - React Dropzone for file uploads
-
-- **Build Tools**:
-  - Vite for development and building
-  - PostCSS for CSS processing
+- **Frontend Framework**: React 18 with TypeScript
+- **Styling**: Tailwind CSS
+- **Build Tool**: Vite
+- **UI Components**: 
+  - Headless UI for accessible components
+  - Heroicons for beautiful icons
+- **Image Processing**: html2canvas for analysis export
+- **State Management**: React Hooks
+- **Routing**: React Router v7
+- **HTTP Client**: Axios
+- **Development Tools**:
   - ESLint for code quality
+  - TypeScript for type safety
+  - PostCSS for CSS processing
 
 ## Getting Started
 
-### Prerequisites
+1. Clone the repository
+```bash
+git clone https://github.com/yourusername/ngakak.git
+cd ngakak
+```
 
-- Node.js 18 or higher
-- npm or yarn
-- Backend API service running (see API setup below)
+2. Install dependencies
+```bash
+npm install
+```
 
-### Installation
+3. Set up environment variables
+```bash
+cp .env.example .env
+```
+Edit `.env` with your configuration:
+- `VITE_API_BASE_URL`: Your backend API URL
+- `VITE_ALLOWED_HOST`: Your domain (e.g., ngakak.yourdomain.com)
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/ngakak.git
-   cd ngakak
-   ```
+4. Start development server
+```bash
+npm run dev
+```
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Create a `.env` file based on `.env.example`:
-   ```bash
-   cp .env.example .env
-   ```
-
-4. Update the `.env` file with your API endpoint:
-   ```
-   VITE_API_BASE_URL=http://your-api-endpoint
-   ```
-
-5. Start the development server:
-   ```bash
-   npm run dev
-   ```
-
-The app will be available at `http://localhost:3000`
-
-### Building for Production
+## Building for Production
 
 ```bash
 npm run build
 ```
 
-The built files will be in the `dist` directory.
-
-### Deployment
-
-#### Railway Deployment
-
-This project includes configuration for easy deployment to [Railway](https://railway.app):
-
-1. Fork this repository to your GitHub account
-2. Create a new project in Railway
-3. Connect your GitHub repository
-4. Add the following environment variables in Railway:
-   - `VITE_API_BASE_URL`: Your backend API URL
-   - `VITE_ALLOWED_HOST`: Your custom domain (e.g., ngakak.yudopr.dev)
-   - Any other environment variables required by your app
-5. Railway will automatically deploy your application
-
-The deployment configuration is defined in `railway.json` and includes:
-- Automatic builds using Nixpacks
-- Health checks and automatic restarts
-- Production-ready server configuration
-
-You can also deploy manually using the Railway CLI:
-```bash
-# Install Railway CLI
-npm i -g @railway/cli
-
-# Login to your Railway account
-railway login
-
-# Link to your Railway project
-railway link
-
-# Deploy your application
-railway up
-```
-
-## API Integration
-
-The application expects the following API endpoints:
-
-- `POST /auth/login`: Authentication endpoint
-- `POST /splitbill/analyze`: Bill analysis endpoint
-
-See the API documentation for detailed request/response formats.
+The build output will be in the `dist` directory.
 
 ## Project Structure
 
@@ -133,6 +80,15 @@ src/
 └── index.css         # Global styles
 ```
 
+## Deployment
+
+The application is configured for deployment on Railway:
+
+1. Create a new project on Railway
+2. Connect your repository
+3. Add required environment variables
+4. Railway will automatically deploy your application
+
 ## Contributing
 
 1. Fork the repository
@@ -150,6 +106,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [React](https://reactjs.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Vite](https://vitejs.dev/)
-- [React Router](https://reactrouter.com/)
-- [Headless UI](https://headlessui.dev/)
 - [Railway](https://railway.app)
