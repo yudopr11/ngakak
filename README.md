@@ -83,6 +83,7 @@ This project includes configuration for easy deployment to [Railway](https://rai
 3. Connect your GitHub repository
 4. Add the following environment variables in Railway:
    - `VITE_API_BASE_URL`: Your backend API URL
+   - `VITE_ALLOWED_HOST`: Your custom domain (e.g., ngakak.yudopr.dev)
    - Any other environment variables required by your app
 5. Railway will automatically deploy your application
 
