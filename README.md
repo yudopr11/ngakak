@@ -66,18 +66,35 @@ The build output will be in the `dist` directory.
 ## Project Structure
 
 ```
-src/
-├── components/          # React components
-│   ├── BillSplitter.tsx    # Main bill splitting component
-│   ├── CurrencyDisplay.tsx # Currency formatting component
-│   ├── Login.tsx          # Authentication component
-│   └── Navbar.tsx         # Navigation component
-├── services/           # API and auth services
-│   ├── api.ts         # API integration
-│   └── auth.ts        # Authentication logic
-├── App.tsx            # Main application component
-├── main.tsx          # Application entry point
-└── index.css         # Global styles
+ngakak/
+├── public/                # Static assets
+│   └── favicon.svg       # Application favicon
+├── src/                  # Source code
+│   ├── components/       # React components
+│   │   ├── BillAnalysis.tsx    # Bill analysis display
+│   │   ├── BillSplitter.tsx    # Main bill splitting component
+│   │   ├── CurrencyDisplay.tsx # Currency formatting component
+│   │   ├── ImageUploader.tsx   # Image upload component
+│   │   ├── Login.tsx          # Authentication component
+│   │   └── Navbar.tsx         # Navigation component
+│   ├── services/         # API and services
+│   │   ├── api.ts           # API integration
+│   │   ├── auth.ts          # Authentication logic
+│   │   └── axiosConfig.ts   # Axios configuration
+│   ├── App.tsx          # Main application component
+│   ├── env.d.ts         # Environment type definitions
+│   ├── index.css        # Global styles
+│   └── main.tsx         # Application entry point
+├── .gitattributes       # Git attributes configuration
+├── .gitignore           # Git ignore configuration
+├── index.html           # HTML entry point
+├── package.json         # Project dependencies and scripts
+├── postcss.config.js    # PostCSS configuration
+├── railway.json         # Railway deployment configuration
+├── README.md           # Project documentation
+├── tailwind.config.js   # Tailwind CSS configuration
+├── tsconfig.json        # TypeScript configuration
+└── vite.config.ts       # Vite configuration
 ```
 
 ## Deployment
