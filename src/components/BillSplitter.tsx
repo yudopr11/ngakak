@@ -173,9 +173,10 @@ export default function BillSplitter() {
 
             // Fix SVG icons
             element.querySelectorAll('svg').forEach(svg => {
+              const originalViewBox = svg.getAttribute('viewBox') || '0 0 20 20';
               svg.setAttribute('width', '20');
               svg.setAttribute('height', '20');
-              svg.setAttribute('viewBox', '0 0 20 20');
+              svg.setAttribute('viewBox', originalViewBox);
               svg.style.display = 'block';
               
               svg.querySelectorAll('path').forEach(path => {
