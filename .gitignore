@@ -31,3 +31,6 @@ yarn-error.log*
 
 # React Router
 /.react-router/
+
+# api-doc
+openapi.json

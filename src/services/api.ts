@@ -1,6 +1,6 @@
 import axios from 'axios';
+import axiosInstance from './axiosConfig';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 export interface BillAnalysisResponse {
   split_details: {
@@ -30,8 +30,8 @@ export const analyzeBill = async (image: File, description: string, token: strin
   formData.append('description', description);
 
   try {
-    const response = await axios.post<BillAnalysisResponse>(
-      `${API_BASE_URL}/splitbill/analyze`,
+    const response = await axiosInstance.post<BillAnalysisResponse>(
+      '/splitbill/analyze',
       formData,
       {
         headers: {
@@ -46,11 +46,10 @@ export const analyzeBill = async (image: File, description: string, token: strin
       const status = error.response?.status;
       const errorMessage = error.response?.data?.detail || error.message;
 
+      // Don't handle 401 here as it's handled by the interceptor
       switch (status) {
         case 400:
           throw new Error('Invalid bill image. Please make sure the image is clear and readable.');
-        case 401:
-          throw new Error('Your session has expired. Please login again.');
         case 413:
           throw new Error('File size too large. Maximum size allowed is 5MB.');
         case 415:
