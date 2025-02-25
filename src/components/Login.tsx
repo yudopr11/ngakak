@@ -13,14 +13,27 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return; // Prevent multiple submissions
     setIsLoading(true);
 
     try {
       await login(username, password);
-      toast.success('Login successful!');
+      toast.success('Login successful!', {
+        duration: 3000
+      });
       navigate('/');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Login failed');
+      if (error instanceof Error) {
+        toast.error(error.message, {
+          duration: 5000,
+          icon: '🔒'
+        });
+      } else {
+        toast.error('Login failed. Please try again.', {
+          duration: 5000,
+          icon: '❌'
+        });
+      }
     } finally {
       setIsLoading(false);
     }

@@ -2,9 +2,10 @@ import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { logout, refreshToken } from './auth';
 import toast from 'react-hot-toast';
 
-// Extend axios request config to include _retry flag
+// Extend axios request config to include _retry flag and noAuth flag
 interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
+  noAuth?: boolean;
 }
 
 // Create axios instance with base URL
@@ -30,11 +31,37 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
+// Add request interceptor to handle auth header
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    const extendedConfig = config as ExtendedAxiosRequestConfig;
+    
+    // Skip auth header for login request
+    if (extendedConfig.noAuth) {
+      return config;
+    }
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 // Add response interceptor
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as ExtendedAxiosRequestConfig;
+    
+    // Skip refresh token logic for login request
+    if (originalRequest?.noAuth) {
+      return Promise.reject(error);
+    }
     
     // If error is not 401 or request already retried, reject
     if (!error.response || error.response.status !== 401 || !originalRequest || originalRequest._retry) {

@@ -2,11 +2,11 @@ import axios from 'axios';
 import axiosInstance from './axiosConfig';
 import toast from 'react-hot-toast';
 
-
-export interface LoginResponse {
+interface LoginResponse {
   access_token: string;
   token_type: string;
 }
+
 
 export const login = async (username: string, password: string): Promise<LoginResponse> => {
   try {
@@ -21,8 +21,9 @@ export const login = async (username: string, password: string): Promise<LoginRe
         headers: {
           'Content-Type': 'multipart/form-data',
         },
-        withCredentials: true, // Important: needed to handle cookies
-      }
+        withCredentials: true,
+        noAuth: true // Mark this request to skip auth interceptor
+      } as any // Type assertion for custom config
     );
     
     // Store the access token in localStorage
@@ -31,6 +32,12 @@ export const login = async (username: string, password: string): Promise<LoginRe
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
+      // Clear any existing token to prevent refresh attempts
+      localStorage.removeItem('token');
+      
+      if (error.response?.status === 401) {
+        throw new Error('Invalid username or password');
+      }
       throw new Error(error.response?.data?.detail || 'Login failed');
     }
     throw new Error('Login failed');
