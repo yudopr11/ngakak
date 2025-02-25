@@ -1,12 +1,11 @@
 import { useState, useRef } from 'react';
-import { useDropzone } from 'react-dropzone';
-import { PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import { analyzeBill } from '../services/api';
 import { getToken } from '../services/auth';
 import type { BillAnalysisResponse } from '../services/api';
-import CurrencyDisplay from './CurrencyDisplay';
 import html2canvas from 'html2canvas';
+import ImageUploader from './ImageUploader';
+import BillAnalysis from './BillAnalysis';
 
 export default function BillSplitter() {
   const [description, setDescription] = useState('');
@@ -26,29 +25,10 @@ export default function BillSplitter() {
     setAnalysis(null);
   };
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    accept: {
-      'image/*': ['.jpeg', '.jpg', '.png', '.webp']
-    },
-    maxSize: 5 * 1024 * 1024, // 5MB
-    onDrop: async (acceptedFiles) => {
-      if (acceptedFiles.length === 0) return;
-      
-      const file = acceptedFiles[0];
-      setSelectedImage(file);
-      
-      // Create preview URL
-      const previewUrl = URL.createObjectURL(file);
-      setImagePreview(previewUrl);
-    }
-  });
-
-  const handleRemoveImage = () => {
-    if (imagePreview) {
-      URL.revokeObjectURL(imagePreview);
-    }
-    setSelectedImage(null);
-    setImagePreview(null);
+  const handleImageSelect = (file: File) => {
+    setSelectedImage(file);
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
   };
 
   const handleAnalyze = async () => {
@@ -67,9 +47,54 @@ export default function BillSplitter() {
     try {
       const result = await analyzeBill(selectedImage, description, token);
       setAnalysis(result);
-      toast.success('Bill analyzed successfully!');
+      toast.success('Bill analyzed successfully!', {
+        duration: 3000,
+        icon: '✅'
+      });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to analyze bill');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to analyze bill';
+      
+      if (errorMessage.includes('Invalid bill image')) {
+        toast.error(errorMessage, {
+          duration: 5000,
+          icon: '🖼️'
+        });
+      } else if (errorMessage.includes('session has expired')) {
+        toast.error(errorMessage, {
+          duration: 5000,
+          icon: '🔒'
+        });
+      } else if (errorMessage.includes('File size too large')) {
+        toast.error(errorMessage, {
+          duration: 5000,
+          icon: '📁'
+        });
+      } else if (errorMessage.includes('File type not allowed')) {
+        toast.error(errorMessage, {
+          duration: 5000,
+          icon: '❌'
+        });
+      } else if (errorMessage.includes('Validation error')) {
+        toast.error(errorMessage, {
+          duration: 5000,
+          icon: '⚠️'
+        });
+      } else if (errorMessage.includes('Server error')) {
+        toast.error(errorMessage, {
+          duration: 5000,
+          icon: '🔧'
+        });
+      } else if (errorMessage.includes('check your connection')) {
+        toast.error(errorMessage, {
+          duration: 5000,
+          icon: '📡'
+        });
+      } else {
+        toast.error(errorMessage, {
+          duration: 5000,
+          icon: '❗'
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -145,6 +170,30 @@ export default function BillSplitter() {
               (el as HTMLElement).style.display = 'flex';
               (el as HTMLElement).style.flexDirection = 'column';
             });
+
+            // Fix SVG icons
+            element.querySelectorAll('svg').forEach(svg => {
+              svg.setAttribute('width', '20');
+              svg.setAttribute('height', '20');
+              svg.setAttribute('viewBox', '0 0 20 20');
+              svg.style.display = 'block';
+              
+              svg.querySelectorAll('path').forEach(path => {
+                path.setAttribute('stroke', 'rgb(156, 163, 175)'); // text-gray-400
+                path.setAttribute('stroke-width', '2');
+                path.setAttribute('stroke-linecap', 'round');
+                path.setAttribute('stroke-linejoin', 'round');
+                path.setAttribute('fill', 'none');
+              });
+            });
+
+            // Fix collapse icons specifically
+            element.querySelectorAll('.rotate-180').forEach(el => {
+              const parentDiv = el as HTMLElement;
+              parentDiv.style.transform = 'rotate(180deg)';
+              parentDiv.style.transformOrigin = 'center';
+              parentDiv.style.display = 'inline-block';
+            });
           }
         }
       });
@@ -163,42 +212,12 @@ export default function BillSplitter() {
   };
 
   const renderInputForm = () => (
-    <div className="space-y-6">
-      <div className="card">
-        <h2 className="text-lg font-semibold mb-4">Upload Bill Image</h2>
-        {!imagePreview ? (
-          <div
-            {...getRootProps()}
-            className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
-              ${isDragActive ? 'border-primary-500 bg-primary-500/10' : 'border-gray-700 hover:border-primary-500'}`}
-          >
-            <input {...getInputProps()} />
-            <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <p className="mt-2">
-              {isDragActive
-                ? 'Drop the bill image here...'
-                : 'Drag & drop a bill image, or click to select'}
-            </p>
-            <p className="text-sm text-gray-500 mt-1">
-              Supported formats: JPEG, PNG, WebP (max 5MB)
-            </p>
-          </div>
-        ) : (
-          <div className="relative">
-            <img
-              src={imagePreview}
-              alt="Bill preview"
-              className="w-full h-auto rounded-lg"
-            />
-            <button
-              onClick={handleRemoveImage}
-              className="absolute top-2 right-2 p-1 rounded-full bg-gray-800 text-gray-400 hover:text-white transition-colors"
-            >
-              <XMarkIcon className="h-5 w-5" />
-            </button>
-          </div>
-        )}
-      </div>
+    <div className="space-y-6 pb-8">
+      <ImageUploader
+        imagePreview={imagePreview}
+        onImageSelect={handleImageSelect}
+        onImageRemove={handleReset}
+      />
 
       <div className="card">
         <h2 className="text-lg font-semibold mb-4">Description</h2>
@@ -228,201 +247,20 @@ export default function BillSplitter() {
     </div>
   );
 
-  const renderAnalysis = () => {
-    if (!analysis) return null;
-
-    return (
-      <div className="space-y-6">
-        <div className="flex justify-end">
-          <button
-            onClick={handleReset}
-            className="btn-primary text-sm md:text-base"
-          >
-            Process Another Bill
-          </button>
-        </div>
-
-        <div ref={analysisRef} data-analysis="true" className="space-y-4">
-          <div className="card bg-yellow-900/20 border border-yellow-600/30">
-            <div className="flex items-start space-x-3">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6 text-yellow-500 mt-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <div>
-                <h3 className="text-base md:text-lg font-medium text-yellow-500">AI Analysis Disclaimer</h3>
-                <p className="text-xs md:text-sm text-gray-300 mt-1">
-                  AI can make mistakes in analysis. Please double-check the calculations with the original receipt to ensure accurate cost distribution.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {imagePreview && (
-            <div className="card">
-              <h2 className="text-base md:text-lg font-semibold mb-4">Original Bill Image</h2>
-              <div className="relative rounded-lg overflow-hidden">
-                <img
-                  src={imagePreview}
-                  alt="Original bill"
-                  className="w-full h-auto"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/50 to-transparent pointer-events-none" />
-              </div>
-            </div>
-          )}
-
-          <div className="card">
-            <h2 className="text-base md:text-lg font-semibold mb-6">Bill Summary</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div className="bg-gray-900/50 rounded-lg p-3 md:p-4">
-                <p className="text-xs md:text-sm text-gray-400 mb-1">Total Bill</p>
-                <div className="space-y-1">
-                  <p className="text-xs md:text-sm text-gray-300">{analysis?.currency || 'IDR'}</p>
-                  <CurrencyDisplay 
-                    amount={analysis?.total_bill || 0}
-                    currency=""
-                    className="text-lg md:text-2xl font-bold text-white"
-                  />
-                </div>
-              </div>
-              <div className="bg-gray-900/50 rounded-lg p-3 md:p-4">
-                <p className="text-xs md:text-sm text-gray-400 mb-1">Subtotal</p>
-                <div className="space-y-1">
-                  <p className="text-xs md:text-sm text-gray-300">{analysis?.currency || 'IDR'}</p>
-                  <CurrencyDisplay 
-                    amount={analysis?.subtotal || 0}
-                    currency=""
-                    className="text-lg md:text-2xl font-bold text-white"
-                  />
-                </div>
-              </div>
-              <div className="bg-gray-900/50 rounded-lg p-3 md:p-4">
-                <p className="text-xs md:text-sm text-gray-400 mb-1">VAT</p>
-                <div className="space-y-1">
-                  <p className="text-xs md:text-sm text-gray-300">{analysis?.currency || 'IDR'}</p>
-                  <CurrencyDisplay 
-                    amount={analysis?.subtotal_vat || 0}
-                    currency=""
-                    className="text-lg md:text-2xl font-bold text-white"
-                  />
-                </div>
-              </div>
-              <div className="bg-gray-900/50 rounded-lg p-3 md:p-4">
-                <p className="text-xs md:text-sm text-gray-400 mb-1">Other Charges</p>
-                <div className="space-y-1">
-                  <p className="text-xs md:text-sm text-gray-300">{analysis?.currency || 'IDR'}</p>
-                  <CurrencyDisplay 
-                    amount={analysis?.subtotal_other || 0}
-                    currency=""
-                    className="text-lg md:text-2xl font-bold text-white"
-                  />
-                </div>
-              </div>
-              <div className="bg-gray-900/50 rounded-lg p-3 md:p-4">
-                <p className="text-xs md:text-sm text-gray-400 mb-1">Discounts</p>
-                <div className="space-y-1">
-                  <p className="text-xs md:text-sm text-gray-300">{analysis?.currency || 'IDR'}</p>
-                  <CurrencyDisplay 
-                    amount={analysis?.subtotal_discount || 0}
-                    currency=""
-                    className="text-lg md:text-2xl font-bold text-white"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {Object.entries(analysis?.split_details || {}).map(([person, details]) => (
-              <div key={person} className="card">
-                <h3 className="text-base md:text-lg font-semibold mb-4">{person}'s Share</h3>
-                <div className="space-y-4">
-                  <div className="bg-gray-900 rounded-lg p-3 md:p-4">
-                    <div className="flex justify-between text-xs md:text-sm font-medium text-gray-400 mb-2">
-                      <h4>Items</h4>
-                      <h4>Price</h4>
-                    </div>
-                    <ul className="space-y-1 md:space-y-2">
-                      {details.items.map((item, index) => (
-                        <li key={index} className="flex justify-between text-xs md:text-sm">
-                          <span className="mr-4">{item.item}</span>
-                          <CurrencyDisplay 
-                            amount={item.price}
-                            currency={analysis?.currency || ''}
-                            className="text-xs md:text-sm"
-                          />
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-4">
-                    <div>
-                      <p className="text-xs md:text-sm text-gray-400">Items Total</p>
-                      <CurrencyDisplay 
-                        amount={details.individual_total}
-                        currency={analysis?.currency || ''}
-                        className="text-xs md:text-sm font-semibold"
-                      />
-                    </div>
-                    <div>
-                      <p className="text-xs md:text-sm text-gray-400">VAT Share</p>
-                      <CurrencyDisplay 
-                        amount={details.vat_share}
-                        currency={analysis?.currency || ''}
-                        className="text-xs md:text-sm font-semibold"
-                      />
-                    </div>
-                    <div>
-                      <p className="text-xs md:text-sm text-gray-400">Other Share</p>
-                      <CurrencyDisplay 
-                        amount={details.other_share}
-                        currency={analysis?.currency || ''}
-                        className="text-xs md:text-sm font-semibold"
-                      />
-                    </div>
-                    <div>
-                      <p className="text-xs md:text-sm text-gray-400">Discount Share</p>
-                      <CurrencyDisplay 
-                        amount={details.discount_share}
-                        currency={analysis?.currency || ''}
-                        className="text-xs md:text-sm font-semibold"
-                      />
-                    </div>
-                    <div>
-                      <p className="text-xs md:text-sm text-gray-400">Final Total</p>
-                      <CurrencyDisplay 
-                        amount={details.final_total}
-                        currency={analysis?.currency || ''}
-                        className="text-xs md:text-sm font-bold text-primary-400"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex justify-center mt-8 pb-8">
-          <button
-            onClick={handleSaveImage}
-            className="btn btn-primary flex items-center space-x-2 text-sm md:text-base"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            <span>Save Analysis as Image</span>
-          </button>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        {!analysis ? renderInputForm() : renderAnalysis()}
+        {!analysis ? (
+          renderInputForm()
+        ) : (
+          <BillAnalysis
+            ref={analysisRef}
+            analysis={analysis}
+            imagePreview={imagePreview}
+            onReset={handleReset}
+            onSaveImage={handleSaveImage}
+          />
+        )}
       </div>
     </div>
   );

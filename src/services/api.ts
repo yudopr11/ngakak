@@ -43,12 +43,26 @@ export const analyzeBill = async (image: File, description: string, token: strin
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      if (error.response?.status === 413) {
-        throw new Error('File size too large. Maximum size allowed is 5MB');
-      } else if (error.response?.status === 415) {
-        throw new Error('File type not allowed. Only image/jpeg, image/png, image/jpg, image/webp are allowed');
+      const status = error.response?.status;
+      const errorMessage = error.response?.data?.detail || error.message;
+
+      switch (status) {
+        case 400:
+          throw new Error('Invalid bill image. Please make sure the image is clear and readable.');
+        case 401:
+          throw new Error('Your session has expired. Please login again.');
+        case 413:
+          throw new Error('File size too large. Maximum size allowed is 5MB.');
+        case 415:
+          throw new Error('File type not allowed. Only JPEG, PNG, and WebP images are supported.');
+        case 422:
+          throw new Error(`Validation error: ${errorMessage}`);
+        case 500:
+          throw new Error('Server error. Please try again later.');
+        default:
+          throw new Error('Failed to analyze bill. Please try again.');
       }
     }
-    throw new Error('Failed to analyze bill');
+    throw new Error('Failed to analyze bill. Please check your connection and try again.');
   }
 }; 
