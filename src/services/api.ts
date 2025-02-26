@@ -37,6 +37,8 @@ export const analyzeBill = async (image: File, description: string, token: strin
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
+          'Connection': 'keep-alive',
+          'Keep-Alive': 'timeout=300', // 300 seconds (5 minutes)
         },
         timeout: 5 * 60 * 1000, // 5 minutes = 5 * 60 seconds * 1000 milliseconds
       }
