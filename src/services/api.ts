@@ -38,6 +38,7 @@ export const analyzeBill = async (image: File, description: string, token: strin
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
         },
+        timeout: 5 * 60 * 1000, // 5 minutes = 5 * 60 seconds * 1000 milliseconds
       }
     );
     return response.data;
