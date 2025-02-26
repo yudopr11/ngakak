@@ -22,6 +22,18 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       host: true,
       allowedHosts
+    },
+    build: {
+      chunkSizeWarningLimit: 1000, // Increase chunk size limit to 1000kb
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+            'ui-vendor': ['@headlessui/react', '@heroicons/react'],
+            'utils-vendor': ['axios', 'react-hot-toast', 'html2canvas', 'react-dropzone']
+          }
+        }
+      }
     }
   };
 });
