@@ -13,6 +13,8 @@ export default function BillSplitter() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [analysis, setAnalysis] = useState<BillAnalysisResponse | null>(null);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [savedImageDescription, setSavedImageDescription] = useState<string | undefined>(undefined);
   const analysisRef = useRef<HTMLDivElement>(null);
 
   const handleReset = () => {
@@ -23,6 +25,17 @@ export default function BillSplitter() {
     setImagePreview(null);
     setDescription('');
     setAnalysis(null);
+    setIsRetrying(false);
+    setSavedImageDescription(undefined);
+  };
+
+  const handleRetry = () => {
+    if (analysis?.image_description) {
+      setSavedImageDescription(analysis.image_description);
+    }
+    setDescription('');
+    setAnalysis(null);
+    setIsRetrying(true);
   };
 
   const handleImageSelect = (file: File) => {
@@ -45,8 +58,12 @@ export default function BillSplitter() {
 
     setIsLoading(true);
     try {
-      const result = await analyzeBill(selectedImage, description, token);
+      const imageDescription = isRetrying ? savedImageDescription : undefined;
+      
+      const result = await analyzeBill(selectedImage, description, token, imageDescription);
       setAnalysis(result);
+      setIsRetrying(false);
+      setSavedImageDescription(undefined);
       toast.success('Bill analyzed successfully!', {
         duration: 3000,
         icon: '✅'
@@ -218,6 +235,7 @@ export default function BillSplitter() {
         imagePreview={imagePreview}
         onImageSelect={handleImageSelect}
         onImageRemove={handleReset}
+        disabled={isRetrying}
       />
 
       <div className="card">
@@ -242,7 +260,7 @@ export default function BillSplitter() {
             <span>Analyzing...</span>
           </div>
         ) : (
-          'Analyze Bill'
+          isRetrying ? 'Retry Analysis' : 'Analyze Bill'
         )}
       </button>
     </div>
@@ -259,6 +277,7 @@ export default function BillSplitter() {
             analysis={analysis}
             imagePreview={imagePreview}
             onReset={handleReset}
+            onRetry={handleRetry}
             onSaveImage={handleSaveImage}
           />
         )}

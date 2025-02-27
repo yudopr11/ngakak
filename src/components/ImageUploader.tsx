@@ -6,9 +6,15 @@ interface ImageUploaderProps {
   imagePreview: string | null;
   onImageSelect: (file: File) => void;
   onImageRemove: () => void;
+  disabled?: boolean;
 }
 
-export default function ImageUploader({ imagePreview, onImageSelect, onImageRemove }: ImageUploaderProps) {
+export default function ImageUploader({ 
+  imagePreview, 
+  onImageSelect, 
+  onImageRemove,
+  disabled = false 
+}: ImageUploaderProps) {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
       'image/*': ['.jpeg', '.jpg', '.png', '.webp']
@@ -33,7 +39,8 @@ export default function ImageUploader({ imagePreview, onImageSelect, onImageRemo
 
       if (acceptedFiles.length === 0) return;
       onImageSelect(acceptedFiles[0]);
-    }
+    },
+    disabled
   });
 
   return (
@@ -43,14 +50,17 @@ export default function ImageUploader({ imagePreview, onImageSelect, onImageRemo
         <div
           {...getRootProps()}
           className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
-            ${isDragActive ? 'border-primary-500 bg-primary-500/10' : 'border-gray-700 hover:border-primary-500'}`}
+            ${isDragActive ? 'border-primary-500 bg-primary-500/10' : 'border-gray-700 hover:border-primary-500'}
+            ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <input {...getInputProps()} />
           <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
           <p className="mt-2">
             {isDragActive
               ? 'Drop the bill image here...'
-              : 'Drag & drop a bill image, or click to select'}
+              : disabled 
+                ? 'Image upload disabled during retry'
+                : 'Drag & drop a bill image, or click to select'}
           </p>
           <p className="text-sm text-gray-500 mt-1">
             Supported formats: JPEG, PNG, WebP (max 5MB)
@@ -65,7 +75,9 @@ export default function ImageUploader({ imagePreview, onImageSelect, onImageRemo
           />
           <button
             onClick={onImageRemove}
-            className="absolute top-2 right-2 p-1 rounded-full bg-gray-800 text-gray-400 hover:text-white transition-colors"
+            disabled={disabled}
+            className={`absolute top-2 right-2 p-1 rounded-full bg-gray-800 text-gray-400 hover:text-white transition-colors
+              ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <XMarkIcon className="h-5 w-5" />
           </button>

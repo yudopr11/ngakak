@@ -22,12 +22,27 @@ export interface BillAnalysisResponse {
   subtotal_other: number;
   subtotal_discount: number;
   currency: string;
+  image_description: string;
+  token_count: {
+    image: number;
+    analysis: number;
+  };
 }
 
-export const analyzeBill = async (image: File, description: string, token: string): Promise<BillAnalysisResponse> => {
+export const analyzeBill = async (
+  image: File, 
+  description: string, 
+  token: string, 
+  imageDescription?: string
+): Promise<BillAnalysisResponse> => {
   const formData = new FormData();
   formData.append('image', image);
   formData.append('description', description);
+  
+  // Add image_description if provided
+  if (imageDescription) {
+    formData.append('image_description', imageDescription);
+  }
 
   try {
     const response = await axiosInstance.post<BillAnalysisResponse>(
