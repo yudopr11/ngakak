@@ -1,12 +1,12 @@
 import axios from 'axios';
 import axiosInstance from './axiosConfig';
 import toast from 'react-hot-toast';
+import { encryptToken, decryptToken } from './encryption';
 
 interface LoginResponse {
   access_token: string;
   token_type: string;
 }
-
 
 export const login = async (username: string, password: string): Promise<LoginResponse> => {
   try {
@@ -26,8 +26,9 @@ export const login = async (username: string, password: string): Promise<LoginRe
       } as any // Type assertion for custom config
     );
     
-    // Store the access token in localStorage
-    localStorage.setItem('token', response.data.access_token);
+    // Encrypt token before storing
+    const encryptedToken = encryptToken(response.data.access_token);
+    localStorage.setItem('token', encryptedToken);
     
     return response.data;
   } catch (error) {
@@ -54,8 +55,9 @@ export const refreshToken = async (): Promise<LoginResponse> => {
       }
     );
     
-    // Update the access token in localStorage
-    localStorage.setItem('token', response.data.access_token);
+    // Encrypt new token before storing
+    const encryptedToken = encryptToken(response.data.access_token);
+    localStorage.setItem('token', encryptedToken);
     
     return response.data;
   } catch (error) {
@@ -94,7 +96,11 @@ export const logout = async () => {
 };
 
 export const getToken = (): string | null => {
-  return localStorage.getItem('token');
+  const encryptedToken = localStorage.getItem('token');
+  if (!encryptedToken) return null;
+  
+  // Decrypt token before returning
+  return decryptToken(encryptedToken);
 };
 
 export const isAuthenticated = (): boolean => {

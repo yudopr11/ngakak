@@ -1,6 +1,7 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { logout, refreshToken } from './auth';
 import toast from 'react-hot-toast';
+import { decryptToken } from './encryption';
 
 // Define API error response type
 interface ApiErrorResponse {
@@ -43,8 +44,9 @@ const processQueue = (error: any, token: string | null = null) => {
 axiosInstance.interceptors.request.use(
   (config: ExtendedAxiosRequestConfig) => {
     // Add token to request if available and not marked as noAuth
-    const token = localStorage.getItem('token');
-    if (token && !config.noAuth) {
+    const encryptedToken = localStorage.getItem('token');
+    if (encryptedToken && !config.noAuth) {
+      const token = decryptToken(encryptedToken);
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
