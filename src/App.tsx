@@ -22,6 +22,7 @@ export default function App() {
             <PrivateRoute>
               <div className="min-h-screen bg-gray-900">
                 <Navbar />
+                <div className="container mx-auto py-4"></div>
                 <BillSplitter />
               </div>
             </PrivateRoute>
