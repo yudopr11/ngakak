@@ -10,7 +10,8 @@ export default defineConfig(({ mode }) => {
 
   // Add custom host from env if exists
   if (env.VITE_ALLOWED_HOST) {
-    allowedHosts.push(env.VITE_ALLOWED_HOST);
+    const customHosts = env.VITE_ALLOWED_HOST.split(',').map(host => host.trim());
+    allowedHosts.push(...customHosts);
   }
 
   return {
