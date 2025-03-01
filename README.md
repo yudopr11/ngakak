@@ -9,7 +9,8 @@ Ngakak (Ngebagi, Gampang, Asyik, Kompak, Aman, Keren) is a modern bill splitting
 - 💰 Automatic bill splitting calculation
 - 📊 Clear breakdown of individual shares
 - 💾 Save analysis results as images
-- 🔒 Secure user authentication with encrypted token storage
+- 🔒 Secure user authentication with JWT tokens encrypted via AES
+- 🎨 Modern dark-themed UI for reduced eye strain
 - 📱 Responsive design for all devices
 
 ## Tech Stack
@@ -26,11 +27,22 @@ Ngakak (Ngebagi, Gampang, Asyik, Kompak, Aman, Keren) is a modern bill splitting
 - **HTTP Client**: Axios
 - **Security**:
   - CryptoJS for token encryption
-  - Secure token storage with AES encryption
+  - AES-256 encryption for token storage
+  - Environment variable based encryption keys
+- **Notifications**: React Hot Toast
 - **Development Tools**:
   - ESLint for code quality
   - TypeScript for type safety
   - PostCSS for CSS processing
+
+## UI Design
+
+Ngakak features a modern, dark-themed UI with a sleek gradient background that reduces eye strain during extended use. The interface uses a carefully designed color scheme with:
+
+- Deep navy/black background (#0E1520) for the application
+- Slightly lighter card backgrounds (#131E2C) for content
+- Blue primary accents for interactive elements
+- Subtle grid patterns for visual interest without distraction
 
 ## Getting Started
 
@@ -85,9 +97,15 @@ The build output will be in the `dist` directory.
    - Keep your production encryption key secure
 
 2. **Token Storage**
-   - JWT tokens are encrypted using AES before storage
+   - JWT tokens are encrypted using AES before storage in localStorage
    - Tokens are automatically decrypted when making API requests
    - Failed encryption/decryption is logged with fallback behavior
+   - Error handling provides security-related feedback without exposing sensitive details
+
+3. **Authentication**
+   - Axios interceptors automatically handle authentication and refresh tokens
+   - Toast notifications for authentication errors with appropriate error messages
+   - Automatic redirection for expired sessions
 
 ## Project Structure
 
@@ -142,9 +160,6 @@ The application is configured for deployment on Railway:
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Acknowledgments
-
-- [React](https://reactjs.org/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Vite](https://vitejs.dev/)
-- [Railway](https://railway.app)
-- [CryptoJS](https://github.com/brix/crypto-js)
+- Created by [yudopr](https://github.com/yudopr11)
+- Built with [Vite](https://vitejs.dev/), [React](https://reactjs.org/), [TypeScript](https://www.typescriptlang.org/), and [Tailwind CSS](https://tailwindcss.com/)
+- Deploy with [Railway](https://railway.app)
