@@ -143,17 +143,29 @@ ngakak/
 └── vite.config.ts       # Vite configuration
 ```
 
-## Deployment
+## Deployment to Railway
 
-The application is configured for deployment on Railway:
+1. **Railway Setup**
 
-1. Create a new project on Railway
-2. Connect your repository
-3. Add required environment variables:
-   - `VITE_API_BASE_URL`
-   - `VITE_ALLOWED_HOST`
-   - `VITE_ENCRYPTION_KEY` (use a secure, randomly generated key)
-4. Railway will automatically deploy your application
+- Create an account on [Railway](https://railway.app)
+- Install Railway CLI:
+```bash
+npm i -g @railway/cli
+```
+
+2. **Login to Railway**
+```bash
+railway login
+```
+
+3. **Initialize Railway Project**
+```bash
+railway init
+```
+
+4. **Configure Environment Variables**
+- Go to Railway Dashboard
+- Add all environment variables from `.env`
 
 ## License
 
