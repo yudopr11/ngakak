@@ -40,7 +40,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 flex flex-col justify-start items-center pt-24 px-6">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-primary-400 mb-2">Ngakak</h1>

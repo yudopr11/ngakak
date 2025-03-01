@@ -20,7 +20,7 @@ export default function App() {
           path="/"
           element={
             <PrivateRoute>
-              <div className="min-h-screen bg-gray-900">
+              <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950">
                 <Navbar />
                 <div className="container mx-auto py-4"></div>
                 <BillSplitter />
