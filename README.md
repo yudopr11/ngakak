@@ -2,6 +2,8 @@
 
 Ngakak (Ngebagi, Gampang, Asyik, Kompak, Aman, Keren) is a modern bill splitting application that helps you split bills with friends easily and accurately.
 
+![Screenshot_1](Screenshot_8-3-2025_21155.jpeg)
+![Screenshot_1](Screenshot_8-3-2025_21713.jpeg)
 ## Features
 
 - 📸 Upload bill images for automatic analysis
