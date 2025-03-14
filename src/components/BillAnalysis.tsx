@@ -1,6 +1,7 @@
 import { forwardRef, useState } from 'react';
 import type { BillAnalysisResponse } from '../services/api';
 import CurrencyDisplay from './CurrencyDisplay';
+import { ArrowPathIcon, ExclamationTriangleIcon, ArrowDownTrayIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 
 interface BillAnalysisProps {
   analysis: BillAnalysisResponse;
@@ -19,9 +20,7 @@ const BillAnalysis = forwardRef<HTMLDivElement, BillAnalysisProps>(
             onClick={onRetry}
             className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm md:text-base flex items-center gap-2 transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
+            <ArrowPathIcon className="h-5 w-5" stroke="currentColor" />
             <span>Retry With Same Bill</span>
           </button>
           <button
@@ -35,9 +34,7 @@ const BillAnalysis = forwardRef<HTMLDivElement, BillAnalysisProps>(
         <div ref={ref} data-analysis="true" className="space-y-4">
           <div className="card bg-yellow-900/20 border border-yellow-600/30">
             <div className="flex items-start space-x-3">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6 text-yellow-500 mt-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
+              <ExclamationTriangleIcon className="h-5 w-5 md:h-6 md:w-6 text-yellow-500 mt-1 flex-shrink-0" stroke="currentColor" />
               <div>
                 <h3 className="text-base md:text-lg font-medium text-yellow-500">AI Analysis Disclaimer</h3>
                 <p className="text-xs md:text-sm text-gray-300 mt-1">
@@ -70,9 +67,7 @@ const BillAnalysis = forwardRef<HTMLDivElement, BillAnalysisProps>(
             onClick={onSaveImage}
             className="btn btn-primary flex items-center space-x-2 text-sm md:text-base"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
+            <ArrowDownTrayIcon className="h-5 w-5" stroke="currentColor" />
             <span>Save Analysis as Image</span>
           </button>
         </div>
@@ -170,22 +165,10 @@ function PersonShares({ analysis }: { analysis: BillAnalysisResponse }) {
           <div className={`transition-transform duration-200 ${
             isAllExpanded ? 'rotate-180' : ''
           }`}>
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="text-gray-400"
-            >
-              <path
-                d="M5 7.5L10 12.5L15 7.5"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <ChevronDownIcon 
+              className="h-5 w-5 text-gray-400"
+              stroke="currentColor"
+            />
           </div>
         </button>
       </div>
@@ -201,22 +184,10 @@ function PersonShares({ analysis }: { analysis: BillAnalysisResponse }) {
               <div className={`transition-transform duration-200 ${
                 expandedPersons.has(person) ? 'rotate-180' : ''
               }`}>
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="text-gray-400"
-                >
-                  <path
-                    d="M5 7.5L10 12.5L15 7.5"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+                <ChevronDownIcon 
+                  className="h-5 w-5 text-gray-400"
+                  stroke="currentColor"
+                />
               </div>
             </div>
             <div className="flex items-center space-x-2">
