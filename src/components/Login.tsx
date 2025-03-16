@@ -9,6 +9,7 @@ export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isGuestLoading, setIsGuestLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -36,6 +37,26 @@ export default function Login() {
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGuestLogin = async () => {
+    if (isGuestLoading || isLoading) return; // Prevent multiple submissions
+    setIsGuestLoading(true);
+
+    try {
+      await login('guest', 'strongpassword123');
+      toast.success('Logged in as guest', {
+        duration: 3000
+      });
+      navigate('/');
+    } catch (error) {
+      toast.error('Guest login failed. Please try again.', {
+        duration: 5000,
+        icon: '❌'
+      });
+    } finally {
+      setIsGuestLoading(false);
     }
   };
 
@@ -104,6 +125,25 @@ export default function Login() {
           >
             {isLoading ? 'Logging in...' : 'Login'}
           </button>
+          
+          <div className="flex items-center justify-center my-4">
+            <div className="flex-grow h-px bg-gray-700"></div>
+            <span className="px-4 text-sm text-gray-400">OR</span>
+            <div className="flex-grow h-px bg-gray-700"></div>
+          </div>
+          
+          <button
+            type="button"
+            onClick={handleGuestLogin}
+            disabled={isGuestLoading || isLoading}
+            className="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isGuestLoading ? 'Logging in as guest...' : 'Continue as Guest'}
+          </button>
+          
+          <p className="text-xs text-gray-400 text-center mt-2">
+            Guest accounts have limited usage (3 analyses per day)
+          </p>
         </form>
       </div>
     </div>

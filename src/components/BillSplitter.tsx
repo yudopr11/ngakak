@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { analyzeBill } from '../services/api';
 import { getToken } from '../services/auth';
@@ -6,6 +6,15 @@ import type { BillAnalysisResponse } from '../services/api';
 import html2canvas from 'html2canvas';
 import ImageUploader from './ImageUploader';
 import BillAnalysis from './BillAnalysis';
+
+// Constants for guest usage tracking
+const GUEST_USAGE_KEY = 'guest_bill_analyses';
+const GUEST_USAGE_LIMIT = 3;
+
+interface GuestUsage {
+  date: string;
+  count: number;
+}
 
 export default function BillSplitter() {
   const [description, setDescription] = useState('');
@@ -15,7 +24,85 @@ export default function BillSplitter() {
   const [analysis, setAnalysis] = useState<BillAnalysisResponse | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
   const [savedImageDescription, setSavedImageDescription] = useState<string | undefined>(undefined);
+  const [isGuestUser, setIsGuestUser] = useState(false);
+  const [guestUsageCount, setGuestUsageCount] = useState(0);
   const analysisRef = useRef<HTMLDivElement>(null);
+
+  // Check if the user is a guest and track their usage
+  useEffect(() => {
+    const token = getToken();
+    // A simple way to check if it's the guest account - in a real app, you might want to use a more robust method
+    if (token) {
+      try {
+        // Decode JWT to check if it's the guest user (simplified example)
+        const tokenParts = token.split('.');
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          const isGuest = payload.sub === 'guest';
+          setIsGuestUser(isGuest);
+          
+          if (isGuest) {
+            checkGuestUsage();
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing token:', error);
+      }
+    }
+  }, []);
+
+  // Track guest usage
+  const checkGuestUsage = () => {
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const storedUsage = localStorage.getItem(GUEST_USAGE_KEY);
+    
+    let usage: GuestUsage;
+    
+    if (storedUsage) {
+      usage = JSON.parse(storedUsage);
+      // Reset counter if it's a new day
+      if (usage.date !== today) {
+        usage = { date: today, count: 0 };
+      }
+    } else {
+      usage = { date: today, count: 0 };
+    }
+    
+    setGuestUsageCount(usage.count);
+  };
+
+  // Increment guest usage counter
+  const incrementGuestUsage = () => {
+    if (!isGuestUser) return;
+    
+    const today = new Date().toISOString().split('T')[0];
+    const storedUsage = localStorage.getItem(GUEST_USAGE_KEY);
+    
+    let usage: GuestUsage;
+    
+    if (storedUsage) {
+      usage = JSON.parse(storedUsage);
+      // Reset counter if it's a new day
+      if (usage.date !== today) {
+        usage = { date: today, count: 1 };
+      } else {
+        usage.count += 1;
+      }
+    } else {
+      usage = { date: today, count: 1 };
+    }
+    
+    localStorage.setItem(GUEST_USAGE_KEY, JSON.stringify(usage));
+    setGuestUsageCount(usage.count);
+    
+    // Check if limit reached after this analysis
+    if (usage.count >= GUEST_USAGE_LIMIT) {
+      toast.error(`You've reached the daily limit (${GUEST_USAGE_LIMIT}) for bill analyses as a guest user.`, {
+        duration: 6000,
+        icon: '⚠️'
+      });
+    }
+  };
 
   const handleReset = () => {
     if (imagePreview) {
@@ -50,10 +137,24 @@ export default function BillSplitter() {
       return;
     }
 
+    // Check guest usage limit before proceeding
+    if (isGuestUser && guestUsageCount >= GUEST_USAGE_LIMIT) {
+      toast.error(`Daily limit reached (${GUEST_USAGE_LIMIT}). Please try again tomorrow or create an account.`, {
+        duration: 5000,
+        icon: '⚠️'
+      });
+      return;
+    }
+
     const token = getToken();
     if (!token) {
       toast.error('Authentication token not found. Please login again.');
       return;
+    }
+
+    // Increment guest usage if it's a guest user - count each click, not just successful analyses
+    if (isGuestUser) {
+      incrementGuestUsage();
     }
 
     setIsLoading(true);
@@ -64,6 +165,7 @@ export default function BillSplitter() {
       setAnalysis(result);
       setIsRetrying(false);
       setSavedImageDescription(undefined);
+      
       toast.success('Bill analyzed successfully!', {
         duration: 3000,
         icon: '✅'
@@ -71,7 +173,20 @@ export default function BillSplitter() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to analyze bill';
       
-      if (errorMessage.includes('Invalid bill image')) {
+      // If it's a 429 response, it means the user has reached their limit
+      if (errorMessage.includes('429') || errorMessage.toLowerCase().includes('too many requests')) {
+        // For a guest user, update the count to the max limit
+        if (isGuestUser) {
+          const today = new Date().toISOString().split('T')[0];
+          localStorage.setItem(GUEST_USAGE_KEY, JSON.stringify({ date: today, count: GUEST_USAGE_LIMIT }));
+          setGuestUsageCount(GUEST_USAGE_LIMIT);
+        }
+        
+        toast.error('You have reached your daily analysis limit. Please try again tomorrow.', {
+          duration: 5000,
+          icon: '⏳'
+        });
+      } else if (errorMessage.includes('Invalid bill image')) {
         toast.error(errorMessage, {
           duration: 5000,
           icon: '🖼️'
@@ -249,9 +364,22 @@ export default function BillSplitter() {
         />
       </div>
 
+      {isGuestUser && (
+        <div className="card bg-blue-900/20 border border-blue-600/30 mb-4">
+          <div className="flex items-start space-x-3">
+            <div>
+              <h3 className="text-base font-medium text-blue-400">Guest Account</h3>
+              <p className="text-xs text-gray-300 mt-1">
+                You have used {guestUsageCount} of {GUEST_USAGE_LIMIT} bill analyses today.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <button
         onClick={handleAnalyze}
-        disabled={isLoading || !selectedImage || !description.trim()}
+        disabled={isLoading || !selectedImage || !description.trim() || (isGuestUser && guestUsageCount >= GUEST_USAGE_LIMIT)}
         className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isLoading ? (
