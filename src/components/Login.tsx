@@ -45,7 +45,16 @@ export default function Login() {
     setIsGuestLoading(true);
 
     try {
-      await login('guest', 'strongpassword123');
+      // Get guest credentials from environment variables
+      const guestUsername = import.meta.env.VITE_GUEST_USERNAME;
+      const guestPassword = import.meta.env.VITE_GUEST_PASSWORD;
+      
+      // Fallback to placeholders if env vars are not set (for development)
+      if (!guestUsername || !guestPassword) {
+        console.warn('VITE_GUEST_USERNAME or VITE_GUEST_PASSWORD environment variables are not set');
+      }
+      
+      await login(guestUsername || 'guest_username', guestPassword || 'placeholder_password');
       toast.success('Logged in as guest', {
         duration: 3000
       });
