@@ -28,13 +28,13 @@ export const login = async (username: string, password: string): Promise<LoginRe
     
     // Encrypt token before storing
     const encryptedToken = encryptToken(response.data.access_token);
-    localStorage.setItem('token', encryptedToken);
+    localStorage.setItem('access_token', encryptedToken);
     
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       // Clear any existing token to prevent refresh attempts
-      localStorage.removeItem('token');
+      localStorage.removeItem('access_token');
       
       if (error.response?.status === 401) {
         throw new Error('Invalid username or password');
@@ -91,12 +91,12 @@ export const logout = async () => {
     });
   } finally {
     // Always clear local storage token
-    localStorage.removeItem('token');
+    localStorage.removeItem('access_token');
   }
 };
 
 export const getToken = (): string | null => {
-  const encryptedToken = localStorage.getItem('token');
+  const encryptedToken = localStorage.getItem('access_token');
   if (!encryptedToken) return null;
   
   // Decrypt token before returning
