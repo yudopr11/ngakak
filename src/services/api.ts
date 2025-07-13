@@ -46,7 +46,7 @@ export const analyzeBill = async (
 
   try {
     const response = await axiosInstance.post<BillAnalysisResponse>(
-      '/splitbill/analyze',
+      '/ngakak/analyze',
       formData,
       {
         headers: {
